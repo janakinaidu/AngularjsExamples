@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE> New Document </TITLE>
+<META NAME="Generator" CONTENT="EditPlus">
+<META NAME="Author" CONTENT="">
+<META NAME="Keywords" CONTENT="">
+<META NAME="Description" CONTENT="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+<script>
+var app = angular.module("peopleApp",[]).controller("peopleController",['$scope',function($scope){
+				
+var peoples = [{name:"janaki naidu",gender:1,age:26},
+						  {name:"venkatesh duddu",gender:1,age:30},
+						  {name:"smruthi lenka",gender:2,age:24},
+						  {name:"saiteja",gender:1,age:26},
+						  {name:"hariteja",gender:2,age:36},
+						  {name:"test",gender:3,age:80}				
+						];
+						$scope.peoples = peoples;//Here i need to write one service to sort the people based on age;
+}]);
+app.filter("gender",function(){
+			return function(gender){
+					switch(gender){
+					case 1:
+					    return "Male";
+					case 2:
+					   return "Female";
+					 case 3:
+					   return "Not disclosed";
+					
+					}
+			}
+}).filter( 'camelCase', function ()
+             {
+                 var camelCaseFilter = function ( input )
+                 {
+                     var words = input.split( ' ' );
+                     for ( var i = 0, len = words.length; i < len; i++ )
+                         words[i] = words[i].charAt( 0 ).toUpperCase() + words[i].slice( 1 );
+                     return words.join( ' ' );
+                 };
+                 return camelCaseFilter;
+             } )
+</script>
+</HEAD>
+
+<BODY ng-app="peopleApp">
+				<div ng-controller="peopleController">
+				<div class="container">
+						<h2>Basic TableCreation By janakinaidu</h2><input type="text" ng-model="search" placeholder="search peoples">
+						<table border="2" class="table">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Gender</th>
+									<th>Age</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="people in peoples|orderBy:'age'|filter:search ">
+								     <td>{{people.name|camelCase}}</td>
+									 <td>{{people.gender|gender}}</td>
+									 <td>{{people.age}}</td>
+								</tr>
+							</tbody>
+						</table>
+						</div>
+				</div>
+</BODY>
+</HTML>
