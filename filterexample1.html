@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <HTML>
 <HEAD>
-<TITLE> New Document </TITLE>
+<TITLE>Angularjs-janakinaidu-Filters & services</TITLE>
 <META NAME="Generator" CONTENT="EditPlus">
 <META NAME="Author" CONTENT="">
 <META NAME="Keywords" CONTENT="">
@@ -13,16 +13,45 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
 <script>
-var app = angular.module("peopleApp",[]).controller("peopleController",['$scope',function($scope){
+var app = angular.module("peopleApp",[]).service("sortingService",function(){
+								this.peopleSortingFunction  = function(peoplesArray){
+
+											peoplesArray = peoplesArray.sort(function(a,b){
+													if(a.age>b.age){
+													return 1;
+													}else if(a.age<b.age){
+													return -1;
+													}else{
+													return 0;
+													}
+											});
+								return peoplesArray;
+								}
+
+}).service("splitPrices",function(){
+	this.splitPriceValues = function(priceValue){
+			return priceValue = priceValue.toFixed(2);
+	}
+}).controller("peopleController",['$scope','sortingService','splitPrices',function($scope,sortingService,splitPrices){
 				
-var peoples = [{name:"janaki naidu",gender:1,age:26},
-						  {name:"venkatesh duddu",gender:1,age:30},
-						  {name:"smruthi lenka",gender:2,age:24},
-						  {name:"saiteja",gender:1,age:26},
-						  {name:"hariteja",gender:2,age:36},
-						  {name:"test",gender:3,age:80}				
+var peoples = [{name:"janaki naidu",gender:1,age:26,productprice:250.6869,city:"HYD"},
+						  {name:"venkatesh duddu",gender:1,age:30,productprice:500,city:"BAN"},
+						  {name:"smruthi lenka",gender:2,age:24,productprice:100,city:"HYD"},
+						  {name:"saiteja",gender:1,age:26,productprice:555,city:"PUNE"},
+						  {name:"hariteja",gender:2,age:36,productprice:500.259,city:"BAN"},
+						   {name:"srini vas",gender:1,age:26,productprice:500.259,city:"PUNE"},
+						  {name:"test",gender:3,age:80,productprice:200.085,city:"HYD"}				
 						];
-						$scope.peoples = peoples;//Here i need to write one service to sort the people based on age;
+						
+						//I am using below code for fixing the decimal point to 2 digits;
+						$.each(peoples,function(index,val){
+						$scope.productprice = splitPrices.splitPriceValues(val.productprice)
+						val.productprice = splitPrices.splitPriceValues(val.productprice);
+						});
+						
+						//calling sorting service based on age;
+						$scope.peoples = sortingService.peopleSortingFunction(peoples);
+						
 }]);
 app.filter("gender",function(){
 			return function(gender){
@@ -47,26 +76,34 @@ app.filter("gender",function(){
                  };
                  return camelCaseFilter;
              } )
+
 </script>
 </HEAD>
 
 <BODY ng-app="peopleApp">
 				<div ng-controller="peopleController">
 				<div class="container">
-						<h2>Basic TableCreation By janakinaidu</h2><input type="text" ng-model="search" placeholder="search peoples">
-						<table border="2" class="table">
+						<h2>Basic TableCreation By janakinaidu</h2>
+<input type="text" ng-model="search.name" placeholder="search peoples by name">
+<input type="text" ng-model="search.city" placeholder="search peoples by city">
+<input type="checkbox" ng-model="exactMatch"/>Exactmatch
+				<table border="2" class="table">
 							<thead>
 								<tr>
 									<th>Name</th>
 									<th>Gender</th>
 									<th>Age</th>
+									<th>ProductPrice(purchased)</th>
+									<th>CITY</th>
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-repeat="people in peoples|orderBy:'age'|filter:search ">
+								<tr ng-repeat="people in peoples|orderBy:'age'|filter:search:exactMatch ">
 								     <td>{{people.name|camelCase}}</td>
 									 <td>{{people.gender|gender}}</td>
 									 <td>{{people.age}}</td>
+									 <td>{{people.productprice|currency}}</td>
+									 <td>{{people.city}}</td>
 								</tr>
 							</tbody>
 						</table>
