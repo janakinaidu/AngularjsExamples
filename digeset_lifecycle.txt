@@ -1,0 +1,144 @@
+Digest life cycle in AngularJS:
+===============================
+
+//source:https://www.sitepoint.com/understanding-angulars-apply-digest/
+
+Behind the scenes of Two-way-data binding:-
+-------------------------------------------
+
+AngularJS offers an incredibly awesome feature known as two way data binding which greatly simplifies our lives. Data binding means that when you change something in the view, the scope model automagically updates. Similarly, whenever the scope model changes, the view updates itself with the new value. How does does AngularJS do that? When you write an expression ({{aModel}}), behind the scenes Angular sets up a watcher on the scope model, which in turn updates the view whenever the model changes.
+
+$scope.$watch('aModel', function(newValue, oldValue) {
+  //update the DOM with newValue
+});
+
+->The second argument passed to $watch() is known as a listener function, and is called whenever the value of aModel changes.
+
+Questions:
+----------
+Q)How does AngularJS know when aModel changes so it can call the corresponding listener? Does it run a function periodically to check whether the value of the scope model has changed? Well, this is where the $digest cycle steps in.
+
+->The $digest cycle starts as a result of a call to $scope.$digest().
+ Assume that you change a scope model in a handler function through the ng-click directive.
+ In that case AngularJS automatically triggers a $digest cycle by calling $digest().
+->When the $digest cycle starts, =>it fires each of the watchers. These watchers check if the current value of the scope model is different from last calculated value. If yes, then the corresponding listener function executes.
+->As a result if you have any expressions in the view they will be updated. In addition to ng-click, there are several other built-in directives/services that let you change models (e.g. ng-model, $timeout, etc) and automatically trigger a $digest cycle
+
+Note:
+=====
+In the above cases, Angular doesn’t directly call $digest(). Instead, it calls $scope.$apply(), which in turn calls $rootScope.$digest(). As a result of this, a digest cycle starts at the $rootScope, and subsequently visits all the child scopes calling the watchers along the way.
+ 
+=>Now, let’s assume you attach an ng-click directive to a button and pass a function name to it. When the button is clicked, AngularJS wraps the function call within $scope.$apply(). So, your function executes as usual, change models (if any), and a $digest cycle starts to ensure your changes are reflected in the view.
+ 
+Note:
+=====
+ $scope.$apply() automatically calls $rootScope.$digest()
+ The $apply() function comes in two flavors.
+ i)The first one takes a function as an argument, evaluates it, and triggers a $digest cycle.***
+ ii)The second version does not take any arguments and just starts a $digest cycle when called.
+ We will see why the former one is the preferred approach shortly.
+
+Q)When Do You Call $apply() Manually?
+=====================================
+->AngularJS makes one thing pretty clear. It will account for only those model changes which are done inside AngularJS’ context (i.e. the code that changes models is wrapped inside $apply()). Angular’s built-in directives already do this so that any model changes you make are reflected in the view.
+
+=> However, if you change any model outside of the Angular context, then you need to inform Angular of the changes by calling $apply() manually. It’s like telling Angular that you are changing some models and it should fire the watchers so that your changes propagate properly.*******
+
+
+
+  <script>
+    angular.module('myApp',[]).controller('MessageController', function($scope) {
+    
+      $scope.getMessage = function() {
+        setTimeout(function() {
+		$scope.$apply(function(){
+		    $scope.message = 'Fetched after 3 seconds'; 
+            console.log('message:' + $scope.message);
+		
+		});
+         
+        }, 2000);
+      }
+      
+      $scope.getMessage();
+    
+    });
+	
+ <BODY ng-app="myApp">
+<div ng-controller="MessageController">
+        Delayed Message: {{message}}
+      </div>  
+</BODY>
+
+Note:
+=====
+By the way, you should use $timeout service whenever possible which is setTimeout() with automatic $apply() so that you don’t have to call $apply() manually.
+
+ angular.module('myApp',[]).controller('MessageController', function($scope,$timeout) {
+    
+      $scope.getMessage = function() {
+        $timeout(function() {
+          $scope.message = 'Fetched after 3 seconds';
+          console.log('message:'+$scope.message);
+        }, 2000);
+      }
+      
+      $scope.getMessage();
+	//  $timeout( function(){ $scope.getMessage(); }, 2000); or you can simply use like this;
+    
+    });
+	
+	(or)
+	
+	 angular.module('myApp',[]).controller('MessageController', function($scope,$timeout) {
+    
+      $scope.getMessage = function() {
+       setTimeout(function() {
+          $scope.message = 'Fetched after 3 seconds';
+          console.log('message:'+$scope.message);
+		  $scope.$apply();
+        }, 2000);
+      }
+      
+      $scope.getMessage();
+	//  $timeout( function(){ $scope.getMessage(); }, 2000); or you can simply use like this;
+    
+    });
+	
+	(or)
+	angular.module('myApp',[]).controller('MessageController', function($scope,$timeout) {
+    
+      $scope.getMessage = function() {
+          $scope.$apply(function(){
+			  $scope.message = 'Fetched after 3 seconds';
+          console.log('message:'+$scope.message);
+		  })
+		  
+             }
+      
+	$timeout( function(){ $scope.getMessage(); }, 2000);
+    
+    });
+
+(or)
+	 angular.module('myApp',[]).controller('MessageController', function($scope,$timeout) {
+    
+      $scope.getMessage = function() {
+          $scope.message = 'Fetched after 3 seconds';
+          console.log('message:'+$scope.message);
+      }
+      
+	$timeout( function(){ $scope.getMessage(); }, 2000);
+    
+    });
+
+Q3)How Many Times Does the $digest Loop Run?
+=============================================
+the $digest cycle keeps looping until there are no more model changes
+
+Note: At a minimum, $digest will run twice even if your listener functions don’t change any models
+As discussed above, it runs once more to make sure the models are stable and there are no changes.
+
+Conclusion:
+===========
+Angular can detect your changes. If it cannot, then you must call $apply() manually.
