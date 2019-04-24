@@ -1,0 +1,51 @@
+Introduction to ngRoute Module:
+===============================
+Routing in AngularJS is one of the core feature.
+
+ngRoute
+=======
+AngularJS ngRoute module provides routing,
+
+
+https://ajax.googleapis.com/ajax/libs/angularjs/1.2.28//angular-route.min.js
+
+ngView:
+=======
+ngView directive is used to display the HTML templates or views in the specified routes
+
+$routeProvider:
+==============
+->$routeProvider is used to configure the routes. We use the ngRoute config() to configure the $routeProvider.
+->The config() takes a function which takes the $routeProvider as parameter and the routing configuration goes inside the function.
+=>$routeProvider has a simple API, accepting either the when() or otherwise() method
+
+AngularJS Routing Syntax:
+=========================
+
+var app = angular.module("appName", ['ngRoute']);
+
+app.config(function($routeProvider) {
+	$routeProvider
+		.when('/view1', {
+			templateUrl: 'view1.html',
+			controller: 'FirstController'
+		})
+		.when('/view2', {
+			templateUrl: 'view2.html',
+			controller: 'SecondController'
+		})
+		.otherwise({
+			redirectTo: '/view1'
+		});
+});
+
+when() method takes a 'path" and a "route" as parameters.***********
+path is a part of the URL after the # symbol.
+templateUrl property defines which HTML template AngularJS should load and display inside the div with the ngView directive.
+controller property defines which controllers should be used with the HTML template.
+
+When the application is loaded, path is matched against the part of the URL after the # symbol. If no route paths matches the given URL the browser will be redirected to the path specified in the otherwise() function.
+
+
+source:
+https://www.journaldev.com/6225/angularjs-routing-example-ngroute-routeprovider
